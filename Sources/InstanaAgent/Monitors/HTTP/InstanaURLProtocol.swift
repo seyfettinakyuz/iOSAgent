@@ -62,7 +62,13 @@ class InstanaURLProtocol: URLProtocol {
                 return session.webSocketTask(with: request).resume()
             }
             if request.httpBodyStream != nil {
-                return session.uploadTask(withStreamedRequest: request).resume()
+                let nonBodyMutableURLRequest = (request as NSURLRequest).mutableCopy() as? NSMutableURLRequest
+                nonBodyMutableURLRequest?.httpBody = nil
+
+                guard let nonBodyURLRequest = nonBodyMutableURLRequest as? URLRequest else {
+                    return session.uploadTask(withStreamedRequest: request).resume()
+                }
+                return session.uploadTask(withStreamedRequest: nonBodyURLRequest).resume()
             }
 
             switch originalTask {
